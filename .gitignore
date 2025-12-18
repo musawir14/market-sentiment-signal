@@ -6,7 +6,6 @@ __pycache__/
 # Data + outputs
 data/
 *.parquet
-*.csv
 
 # OS / editor
 .DS_Store

@@ -1,0 +1,2 @@
+day,date,tickers,news_docs,events_detected,trades,pipeline_runtime_sec,cache_hit_rate_pct,ic_1d,sharpe,max_drawdown
+1,,,,,,,,,,
