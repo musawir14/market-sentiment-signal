@@ -30,6 +30,7 @@ This project is designed to be reproducible, well-documented, and easy to extend
 
 ## Project Structure
 
+```text
 market-sentiment-signal/
   src/
     pipeline.py
@@ -40,7 +41,7 @@ market-sentiment-signal/
   dashboard/
   report/
   tests/
-  data/               (cached locally; gitignored)
+  data/                (cached locally; gitignored)
   PROGRESS.md
   METRICS.csv
   README.md
@@ -48,10 +49,12 @@ market-sentiment-signal/
   .gitignore
 
 ---
+```md
 
 ## Quickstart
 
 ### 1) Create + activate environment
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -U pip
