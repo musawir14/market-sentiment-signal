@@ -61,8 +61,9 @@ pip install -U pip
 pip install -r requirements.txt
 ```
 ### 2) Run the pipeline
+```bash
 python -m src.pipeline
-
+```
 ---
 
 ## Results (coming soon)
