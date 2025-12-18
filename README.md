@@ -48,8 +48,8 @@ market-sentiment-signal/
   requirements.txt
   .gitignore
 
----
-```md
+```
+
 
 ## Quickstart
 
@@ -59,7 +59,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -U pip
 pip install -r requirements.txt
-
+```
 ### 2) Run the pipeline
 python -m src.pipeline
 
