@@ -11,3 +11,12 @@
 - cache_hit_rate_pct: 0.0
 - news_docs_fetched: 0
 - price_rows_fetched: 0
+
+## Day 2 — Added Stooq Price Ingestions with Cache
+
+**Metrics**
+- tickers_targeted: 4
+- pipeline_runtime_sec: 0.0415
+- cache_hit_rate_pct: 100.0
+- news_docs_fetched: 0
+- price_rows_fetched: 32427
