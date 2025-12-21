@@ -26,7 +26,7 @@
 ## Day 3 — Added GDELT News Ingestion with Cache
 
 **What I shipped (GitHub link):**
-- https://github.com/musawir14/market-sentiment-signal/commit/
+- https://github.com/musawir14/market-sentiment-signal/commit/8cd9f0942be75e891937383ed1a91d67a1327c99
 
 **Blockers / notes:**
 - GDELT query for SPY initially failed due to special characters; changed query to "SPY".
