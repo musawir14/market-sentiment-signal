@@ -7,6 +7,7 @@ from datetime import date
 from pathlib import Path
 
 from src.ingestion.stooq_prices import load_or_download_daily_prices
+from src.ingestion.gdelt_news import load_or_download_gdelt_articles
 
 
 @dataclass
@@ -25,12 +26,20 @@ DEFAULT_TICKERS = [
     "spy.us",
 ]
 
+TICKER_TO_QUERY = {
+    "aapl.us": "Apple",
+    "msft.us": "Microsoft",
+    "nvda.us": "NVIDIA",
+    "spy.us": "SPY",
+}
+
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Market sentiment project pipeline.")
     p.add_argument(
         "--stage",
-        choices=["scaffold", "prices"],
+        choices=["scaffold", "prices", "news"],
         default="scaffold",
         help="Which stage to run.",
     )
@@ -39,6 +48,9 @@ def parse_args() -> argparse.Namespace:
         default=",".join(DEFAULT_TICKERS),
         help="Comma-separated Stooq tickers (e.g., aapl.us,msft.us,spy.us).",
     )
+    p.add_argument("--lookback-days", type=int, default=7, help="Days of news to fetch.")
+    p.add_argument("--max-records", type=int, default=250, help="Max articles per ticker query.")
+
     return p.parse_args()
 
 
@@ -61,6 +73,37 @@ def run_prices_stage(tickers: list[str]) -> RunMetrics:
     metrics.cache_hit_rate_pct = round((cache_hits / len(tickers)) * 100.0, 2) if tickers else 0.0
     return metrics
 
+def run_news_stage(tickers: list[str], lookback_days: int, max_records: int) -> RunMetrics:
+    metrics = RunMetrics()
+    metrics.tickers_targeted = len(tickers)
+
+    cache_dir = Path("data") / "news"
+    total_docs = 0
+    cache_hits = 0
+
+    for t in tickers:
+        query = TICKER_TO_QUERY.get(t.lower(), t)  # fallback to ticker if unknown
+        try:
+            articles, result = load_or_download_gdelt_articles(
+                key=t,
+                query=query,
+                cache_dir=cache_dir,
+                lookback_days=lookback_days,
+                max_records=max_records,
+        )
+        except Exception as e:
+            print(f"- {t}: query='{query}' FAILED: {e}")
+            continue  # skip this ticker and move on
+
+        total_docs += result.docs
+        cache_hits += 1 if result.cache_hit else 0
+
+        print(f"- {t}: query='{query}', docs={result.docs}, cache_hit={result.cache_hit}, path={result.path}")
+
+    metrics.news_docs_fetched = total_docs
+    metrics.cache_hit_rate_pct = round((cache_hits / len(tickers)) * 100.0, 2) if tickers else 0.0
+    return metrics
+
 
 def main() -> None:
     args = parse_args()
@@ -70,9 +113,11 @@ def main() -> None:
 
     if args.stage == "prices":
         metrics = run_prices_stage(tickers)
+    elif args.stage == "news":
+        metrics = run_news_stage(tickers, lookback_days=args.lookback_days, max_records=args.max_records)
     else:
-        # Day 1 scaffold
         metrics = RunMetrics(tickers_targeted=0)
+
 
     metrics.pipeline_runtime_sec = round(time.time() - start, 4)
 
