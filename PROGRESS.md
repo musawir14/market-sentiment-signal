@@ -39,3 +39,19 @@
 - news_docs_fetched: 1000
 - price_rows_fetched: 0
 
+## Day 4 — Baseline sentiment + daily feature aggregation
+
+**What I shipped (GitHub link):**
+- https://github.com/musawir14/market-sentiment-signal/commit/6ffc4a4041e3125272202ea8987ea7e58d42e51c
+
+**Blockers / notes:**
+- Fixed GDELT `seendate` parsing so daily aggregation produces rows.
+
+**Metrics**
+- tickers_targeted: 4
+- pipeline_runtime_sec: 0.1555
+- cache_hit_rate_pct: 100.0
+- news_docs_fetched: 1000
+- daily_feature_rows: 32
+- unique_days: 8
+
