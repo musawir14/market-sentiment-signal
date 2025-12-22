@@ -18,20 +18,37 @@ class FeatureBuildResult:
 
 
 def _to_date(seendate: str) -> str:
-    """
-    GDELT seendate usually looks like: 2025-12-20 15:04:00.000
-    We convert to YYYY-MM-DD string.
-    """
-    if not isinstance(seendate, str) or not seendate.strip():
+    if seendate is None:
         return ""
-    # Try a couple common formats
-    for fmt in ("%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S"):
+    s = str(seendate).strip()
+    if not s:
+        return ""
+
+    # Case 1: compact numeric format (YYYYMMDDHHMMSS)
+    if s.isdigit() and len(s) == 14:
         try:
-            dt = datetime.strptime(seendate.strip(), fmt)
+            dt = datetime.strptime(s, "%Y%m%d%H%M%S")
             return dt.date().isoformat()
         except ValueError:
             pass
-    return ""
+
+    # Case 2: common timestamp strings
+    for fmt in ("%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S"):
+        try:
+            dt = datetime.strptime(s, fmt)
+            return dt.date().isoformat()
+        except ValueError:
+            pass
+
+    # Case 3: fallback parser (handles odd formats)
+    try:
+        dt = pd.to_datetime(s, errors="coerce")
+        if pd.isna(dt):
+            return ""
+        return dt.date().isoformat()
+    except Exception:
+        return ""
+
 
 
 def articles_to_daily_features(ticker: str, articles: List[Dict[str, Any]]) -> pd.DataFrame:
