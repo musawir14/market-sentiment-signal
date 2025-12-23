@@ -55,3 +55,24 @@
 - daily_feature_rows: 32
 - unique_days: 8
 
+## Day 5 — Signal evaluation (merge features + forward returns)
+
+**What I shipped (GitHub link):**
+- https://github.com/musawir14/market-sentiment-signal/commit/ddc8e47fd45098d19a2ad521718ed2444a7db911
+
+**Outputs**
+- Wrote: `report/day5_results.md`
+
+**Results**
+- IC (Spearman, 1D): 0.1958
+- Event study (burst days): n=9
+  - mean_1d: 0.004464
+  - mean_3d: -0.001841
+
+**Run metrics**
+- tickers_targeted: 4
+- pipeline_runtime_sec: 1.6369
+- cache_hit_rate_pct: 100.0
+- merged_rows: 32
+
+
