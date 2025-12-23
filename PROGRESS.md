@@ -75,4 +75,30 @@
 - cache_hit_rate_pct: 100.0
 - merged_rows: 32
 
+## Day 6 — Simple trading simulation (1-day delay + slippage)
+
+**What I shipped (GitHub link):**
+- https://github.com/musawir14/market-sentiment-signal/commit/10056605af9f96dcd33d208dc48deb634b296f2f
+
+**Outputs**
+- `report/day6_backtest.md`
+- `report/portfolio_daily.csv`
+- `report/day6_merged_table.csv`
+
+**Strategy**
+- Signal: long if avg_compound ≥ 0.05 on burst days (volume_z ≥ 1.0, docs ≥ 10); short if avg_compound ≤ -0.05 on burst days.
+- Execution: 1-day delay.
+- Portfolio: equal-weight across tickers with positions that day.
+- Costs: 2 bps slippage per executed trade.
+- Data quality: skip trades on days with missing forward returns (prevents NaNs in portfolio series).
+
+**Results**
+- trades (executed): 3
+- sharpe_annual: -14.7371
+- max_drawdown: 0.0000
+
+**Run metrics**
+- tickers_targeted: 4
+- pipeline_runtime_sec: 0.0759
+- cache_hit_rate_pct: 100.0
 
