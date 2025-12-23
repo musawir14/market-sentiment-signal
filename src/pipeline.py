@@ -9,6 +9,8 @@ from pathlib import Path
 from src.ingestion.stooq_prices import load_or_download_daily_prices
 from src.ingestion.gdelt_news import load_or_download_gdelt_articles
 from src.features.daily_features import build_and_save_daily_features
+from src.backtest.eval import build_eval_table, run_signal_eval, write_day5_report
+
 
 
 
@@ -41,7 +43,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Market sentiment project pipeline.")
     p.add_argument(
         "--stage",
-        choices=["scaffold", "prices", "news", "features"],
+        choices=["scaffold", "prices", "news", "features", "eval"],
         default="scaffold",
         help="Which stage to run.",
     )
@@ -144,6 +146,30 @@ def main() -> None:
         metrics.news_docs_fetched = sum(len(v) for v in ticker_to_articles.values())
         metrics.cache_hit_rate_pct = 100.0  # should be, if cached; we’ll verify via output speed
         print(f"\nWrote daily features: rows={result.rows_written}, unique_days={result.unique_days}, path={result.path}")
+    elif args.stage == "eval":
+        from pathlib import Path
+
+        features_path = Path("data") / "features" / "daily_features.csv"
+        prices_cache_dir = Path("data") / "prices"
+
+        eval_df = build_eval_table(
+            tickers=tickers,
+            features_path=features_path,
+            prices_cache_dir=prices_cache_dir,
+        )
+
+        res = run_signal_eval(eval_df)
+
+        # Write a GitHub-trackable report (small markdown file)
+        report_path = Path("report") / "day5_results.md"
+        write_day5_report(res, report_path)
+
+        metrics = RunMetrics(tickers_targeted=len(tickers))
+        metrics.news_docs_fetched = int(len(eval_df))  # rows in merged table (proxy)
+        metrics.cache_hit_rate_pct = 100.0
+        print(f"\nWrote report: {report_path}")
+        print(f"IC (Spearman, 1D): {res.ic_spearman_1d:.4f}")
+        print(f"Event study (burst days): n={res.events_n}, mean_1d={res.event_mean_1d:.6f}, mean_3d={res.event_mean_3d:.6f}")
     else:
         metrics = RunMetrics(tickers_targeted=0)
 
