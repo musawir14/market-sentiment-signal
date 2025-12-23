@@ -10,6 +10,9 @@ from src.ingestion.stooq_prices import load_or_download_daily_prices
 from src.ingestion.gdelt_news import load_or_download_gdelt_articles
 from src.features.daily_features import build_and_save_daily_features
 from src.backtest.eval import build_eval_table, run_signal_eval, write_day5_report
+from src.backtest.sim import simulate_equal_weight_portfolio
+from src.backtest.eval import write_merged_csv
+
 
 
 
@@ -43,7 +46,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Market sentiment project pipeline.")
     p.add_argument(
         "--stage",
-        choices=["scaffold", "prices", "news", "features", "eval"],
+        choices=["scaffold", "prices", "news", "features", "eval", "simulate"],
         default="scaffold",
         help="Which stage to run.",
     )
@@ -54,6 +57,11 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--lookback-days", type=int, default=7, help="Days of news to fetch.")
     p.add_argument("--max-records", type=int, default=250, help="Max articles per ticker query.")
+    p.add_argument("--sent-thresh", type=float, default=0.05, help="Sentiment threshold for long/short.")
+    p.add_argument("--vol-thresh", type=float, default=1.0, help="volume_z threshold for burst days.")
+    p.add_argument("--min-docs", type=int, default=10, help="Minimum docs for signal day.")
+    p.add_argument("--slippage-bps", type=float, default=2.0, help="Slippage per trade in basis points.")
+
 
     return p.parse_args()
 
@@ -170,6 +178,71 @@ def main() -> None:
         print(f"\nWrote report: {report_path}")
         print(f"IC (Spearman, 1D): {res.ic_spearman_1d:.4f}")
         print(f"Event study (burst days): n={res.events_n}, mean_1d={res.event_mean_1d:.6f}, mean_3d={res.event_mean_3d:.6f}")
+    elif args.stage == "simulate":
+        from pathlib import Path
+
+        features_path = Path("data") / "features" / "daily_features.csv"
+        prices_cache_dir = Path("data") / "prices"
+
+        eval_df = build_eval_table(
+            tickers=tickers,
+            features_path=features_path,
+            prices_cache_dir=prices_cache_dir,
+        )
+
+        # Save merged table for transparency (small enough to track for now)
+        merged_path = Path("report") / "day6_merged_table.csv"
+        write_merged_csv(eval_df, merged_path)
+
+        sim = simulate_equal_weight_portfolio(
+            merged_df=eval_df,
+            out_dir=Path("report"),
+            sent_thresh=args.sent_thresh,
+            vol_thresh=args.vol_thresh,
+            min_docs=args.min_docs,
+            slippage_bps=args.slippage_bps,
+        )
+
+        # Write a small markdown report (GitHub-tracked)
+        report_path = Path("report") / "day6_backtest.md"
+        report_path.write_text(
+            "\n".join(
+                [
+                    "# Day 6 — Simple Trading Simulation",
+                    "",
+                    "Strategy:",
+                    "- Build daily signal from news features.",
+                    "- Long if sentiment >= threshold on burst days; short if <= -threshold on burst days.",
+                    "- Execute with a 1-day delay (more realistic).",
+                    "- Equal-weight portfolio across tickers with positions that day.",
+                    "",
+                    "Parameters:",
+                    f"- sent_thresh: {args.sent_thresh}",
+                    f"- vol_thresh: {args.vol_thresh}",
+                    f"- min_docs: {args.min_docs}",
+                    f"- slippage_bps: {args.slippage_bps}",
+                    "",
+                    "Results:",
+                    f"- signal_days (raw): {sim.n_signal_days}",
+                    f"- trades (executed): {sim.n_trades}",
+                    f"- sharpe_annual: {sim.sharpe_annual:.4f}",
+                    f"- max_drawdown: {sim.max_drawdown:.4f}",
+                    "",
+                    "Files:",
+                    f"- merged_table: {merged_path}",
+                    f"- portfolio_daily: {sim.out_portfolio_csv}",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+
+        metrics = RunMetrics(tickers_targeted=len(tickers))
+        metrics.cache_hit_rate_pct = 100.0
+        print(f"\nWrote report: {report_path}")
+        print(f"Trades: {sim.n_trades}")
+        print(f"Sharpe (annualized): {sim.sharpe_annual:.4f}")
+        print(f"Max drawdown: {sim.max_drawdown:.4f}")
     else:
         metrics = RunMetrics(tickers_targeted=0)
 

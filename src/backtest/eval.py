@@ -110,3 +110,7 @@ def write_day5_report(result: EvalResult, out_path: Path) -> None:
         ),
         encoding="utf-8",
     )
+
+def write_merged_csv(eval_df: pd.DataFrame, out_path: Path) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    eval_df.to_csv(out_path, index=False)
