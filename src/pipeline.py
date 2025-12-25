@@ -176,8 +176,14 @@ def main() -> None:
         metrics.news_docs_fetched = int(len(eval_df))  # rows in merged table (proxy)
         metrics.cache_hit_rate_pct = 100.0
         print(f"\nWrote report: {report_path}")
-        print(f"IC (Spearman, 1D): {res.ic_spearman_1d:.4f}")
-        print(f"Event study (burst days): n={res.events_n}, mean_1d={res.event_mean_1d:.6f}, mean_3d={res.event_mean_3d:.6f}")
+        print(f"IC (Spearman, 1D): {res.ic_spearman_1d:.4f}  |  perm p-value: {res.ic_perm_pvalue:.4f}")
+        print(
+            "Event study (burst days): "
+            f"n={res.events_n}, "
+            f"mean_1d={res.event_mean_1d:.6f} (CI [{res.event_mean_1d_ci_lo:.6f}, {res.event_mean_1d_ci_hi:.6f}]), "
+            f"mean_3d={res.event_mean_3d:.6f} (CI [{res.event_mean_3d_ci_lo:.6f}, {res.event_mean_3d_ci_hi:.6f}])"
+        )
+
     elif args.stage == "simulate":
         from pathlib import Path
 

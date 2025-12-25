@@ -7,15 +7,22 @@ from typing import Dict, List, Tuple
 import pandas as pd
 
 from src.backtest.returns import load_price_cache, compute_forward_returns
+from src.backtest.stats import spearman_ic, permutation_pvalue_ic, bootstrap_mean_ci
+
 
 
 @dataclass(frozen=True)
 class EvalResult:
     merged_rows: int
     ic_spearman_1d: float
+    ic_perm_pvalue: float
     events_n: int
     event_mean_1d: float
     event_mean_3d: float
+    event_mean_1d_ci_lo: float
+    event_mean_1d_ci_hi: float
+    event_mean_3d_ci_lo: float
+    event_mean_3d_ci_hi: float
 
 
 def _spearman(x: pd.Series, y: pd.Series) -> float:
@@ -71,20 +78,28 @@ def run_signal_eval(eval_df: pd.DataFrame) -> EvalResult:
     if eval_df.empty:
         return EvalResult(merged_rows=0, ic_spearman_1d=0.0, events_n=0, event_mean_1d=0.0, event_mean_3d=0.0)
 
-    ic = _spearman(eval_df["avg_compound"], eval_df["fwd_ret_1d"])
+    ic = spearman_ic(eval_df["avg_compound"], eval_df["fwd_ret_1d"])
+    p_ic = permutation_pvalue_ic(eval_df["avg_compound"], eval_df["fwd_ret_1d"], n_perm=1000)
+
 
     events = eval_df[(eval_df["volume_z"] >= 1.0) & (eval_df["docs"] >= 10)].copy()
     events_n = int(len(events))
 
-    event_mean_1d = float(events["fwd_ret_1d"].dropna().mean()) if events_n else 0.0
-    event_mean_3d = float(events["fwd_ret_3d"].dropna().mean()) if events_n else 0.0
+    m1, lo1, hi1 = bootstrap_mean_ci(events["fwd_ret_1d"]) if events_n else (0.0, 0.0, 0.0)
+    m3, lo3, hi3 = bootstrap_mean_ci(events["fwd_ret_3d"]) if events_n else (0.0, 0.0, 0.0)
+
 
     return EvalResult(
         merged_rows=int(len(eval_df)),
         ic_spearman_1d=float(ic) if ic == ic else 0.0,
+        ic_perm_pvalue=float(p_ic),
         events_n=events_n,
-        event_mean_1d=event_mean_1d if event_mean_1d == event_mean_1d else 0.0,
-        event_mean_3d=event_mean_3d if event_mean_3d == event_mean_3d else 0.0,
+        event_mean_1d=float(m1),
+        event_mean_3d=float(m3),
+        event_mean_1d_ci_lo=float(lo1),
+        event_mean_1d_ci_hi=float(hi1),
+        event_mean_3d_ci_lo=float(lo3),
+        event_mean_3d_ci_hi=float(hi3),
     )
 
 
@@ -105,6 +120,9 @@ def write_day5_report(result: EvalResult, out_path: Path) -> None:
                 f"- events_n: {result.events_n}",
                 f"- event_mean_1d: {result.event_mean_1d:.6f}",
                 f"- event_mean_3d: {result.event_mean_3d:.6f}",
+                f"- ic_perm_pvalue: {result.ic_perm_pvalue:.4f}",
+                f"- event_mean_1d: {result.event_mean_1d:.6f}  (95% CI [{result.event_mean_1d_ci_lo:.6f}, {result.event_mean_1d_ci_hi:.6f}])",
+                f"- event_mean_3d: {result.event_mean_3d:.6f}  (95% CI [{result.event_mean_3d_ci_lo:.6f}, {result.event_mean_3d_ci_hi:.6f}])",
                 "",
             ]
         ),

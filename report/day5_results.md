@@ -10,3 +10,6 @@ What this measures:
 - events_n: 9
 - event_mean_1d: 0.004464
 - event_mean_3d: -0.001841
+- ic_perm_pvalue: 0.5460
+- event_mean_1d: 0.004464  (95% CI [-0.001589, 0.010647])
+- event_mean_3d: -0.001841  (95% CI [-0.001841, -0.001841])
