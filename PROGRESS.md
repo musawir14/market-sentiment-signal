@@ -102,3 +102,30 @@
 - pipeline_runtime_sec: 0.0759
 - cache_hit_rate_pct: 100.0
 
+## Day 7 — Robustness checks (permutation p-value + bootstrap CIs)
+
+**What I shipped (GitHub link):**
+- https://github.com/musawir14/market-sentiment-signal/commit/a406715bcc8b9711b72ccb71b4476011a5458186
+
+**Feature build**
+- daily_features rows: 32
+- unique_days: 8
+
+**Evaluation (signal quality)**
+- IC (Spearman, 1D): 0.1958
+- Permutation p-value (IC): 0.5460
+- Event study (burst days): n=9
+  - mean_1d: 0.004464  (95% CI [-0.001589, 0.010647])
+  - mean_3d: -0.001841 (95% CI [-0.001841, -0.001841])
+- Interpretation: with this small sample, IC isn’t distinguishable from noise; next step is extending lookback window.”
+
+**Simulation**
+- trades (executed): 3
+- sharpe_annual: -14.7371
+- max_drawdown: 0.0000
+
+**Run metrics**
+- features runtime_sec: 0.1514
+- eval runtime_sec: 0.4175
+- simulate runtime_sec: 0.0793
+- cache_hit_rate_pct: 100.0
