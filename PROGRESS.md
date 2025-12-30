@@ -129,3 +129,25 @@
 - eval runtime_sec: 0.4175
 - simulate runtime_sec: 0.0793
 - cache_hit_rate_pct: 100.0
+
+## Day 8 — Parameter sweep (sensitivity analysis)
+
+**What I added**
+- Ran a grid search over simulation parameters to test sensitivity:
+  - sent_thresh ∈ {0.02, 0.05, 0.08, 0.10}
+  - vol_thresh ∈ {0.5, 1.0, 1.5, 2.0}
+  - min_docs ∈ {5, 10, 20}
+  - slippage_bps ∈ {0, 2, 5}
+- Generated sweep artifacts:
+  - `report/day8_sweep.csv` (all configs)
+  - `report/day8_sweep.md` (top configs + summary)
+
+**Key results**
+- rows_tested: 144
+- trades_range: 0 → 6
+- Best-by-trades configs clustered around:
+  - sent_thresh=0.02, vol_thresh=0.5, min_docs ∈ {5,10,20}, slippage_bps ∈ {0,2,5}
+- In this short window, most configs have negative total_return and unstable Sharpe due to low trade count (small sample).
+
+**Next**
+- Extend lookback window (e.g., 60–180 days) so the sweep reflects more realistic performance and produces smoother equity curves.

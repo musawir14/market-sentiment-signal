@@ -12,6 +12,8 @@ from src.features.daily_features import build_and_save_daily_features
 from src.backtest.eval import build_eval_table, run_signal_eval, write_day5_report
 from src.backtest.sim import simulate_equal_weight_portfolio
 from src.backtest.eval import write_merged_csv
+from src.backtest.sweep import run_sweep, write_sweep_report
+
 
 
 
@@ -46,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Market sentiment project pipeline.")
     p.add_argument(
         "--stage",
-        choices=["scaffold", "prices", "news", "features", "eval", "simulate"],
+        choices=["scaffold", "prices", "news", "features", "eval", "simulate", "sweep"],
         default="scaffold",
         help="Which stage to run.",
     )
@@ -130,7 +132,6 @@ def main() -> None:
     elif args.stage == "features":
         # Force-load from cache by calling the same ingestion function (it should hit cache)
         from src.ingestion.gdelt_news import load_or_download_gdelt_articles
-        from pathlib import Path
 
         ticker_to_articles = {}
         for t in tickers:
@@ -155,7 +156,6 @@ def main() -> None:
         metrics.cache_hit_rate_pct = 100.0  # should be, if cached; we’ll verify via output speed
         print(f"\nWrote daily features: rows={result.rows_written}, unique_days={result.unique_days}, path={result.path}")
     elif args.stage == "eval":
-        from pathlib import Path
 
         features_path = Path("data") / "features" / "daily_features.csv"
         prices_cache_dir = Path("data") / "prices"
@@ -185,7 +185,6 @@ def main() -> None:
         )
 
     elif args.stage == "simulate":
-        from pathlib import Path
 
         features_path = Path("data") / "features" / "daily_features.csv"
         prices_cache_dir = Path("data") / "prices"
@@ -249,6 +248,21 @@ def main() -> None:
         print(f"Trades: {sim.n_trades}")
         print(f"Sharpe (annualized): {sim.sharpe_annual:.4f}")
         print(f"Max drawdown: {sim.max_drawdown:.4f}")
+    elif args.stage == "sweep":
+        merged_path = Path("report") / "day6_merged_table.csv"
+        out_csv = Path("report") / "day8_sweep.csv"
+        out_md = Path("report") / "day8_sweep.md"
+        df = run_sweep(merged_path)
+        write_sweep_report(df, out_csv=out_csv, out_md=out_md)
+        print(f"Wrote {out_csv}")
+        print(f"Wrote {out_md}")
+        metrics = RunMetrics(
+            tickers_targeted=len(tickers),
+            pipeline_runtime_sec=0.0,
+            cache_hit_rate_pct=0.0,
+            news_docs_fetched=0,
+            price_rows_fetched=0,
+        )
     else:
         metrics = RunMetrics(tickers_targeted=0)
 
