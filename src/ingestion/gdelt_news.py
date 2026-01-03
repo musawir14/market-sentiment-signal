@@ -76,12 +76,16 @@ def load_or_download_gdelt_articles(
     if cache_path.exists() and cache_path.stat().st_size > 0:
         payload = json.loads(cache_path.read_text(encoding="utf-8"))
         articles = payload.get("articles", []) if isinstance(payload, dict) else []
-        return articles, NewsIngestResult(key=key, docs=len(articles), cache_hit=True, path=cache_path)
+        return articles, NewsIngestResult(
+            key=key, docs=len(articles), cache_hit=True, path=cache_path
+        )
 
     end_dt = _utc_now()
     start_dt = end_dt - timedelta(days=lookback_days)
 
-    url = build_gdelt_doc_url(query=query, start_dt=start_dt, end_dt=end_dt, max_records=max_records)
+    url = build_gdelt_doc_url(
+        query=query, start_dt=start_dt, end_dt=end_dt, max_records=max_records
+    )
 
     resp = requests.get(url, timeout=timeout_sec)
     resp.raise_for_status()
@@ -95,7 +99,6 @@ def load_or_download_gdelt_articles(
         )
 
     payload = resp.json()
-
 
     # Cache raw payload for reproducibility
     cache_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")

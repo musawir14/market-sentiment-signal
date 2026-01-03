@@ -50,7 +50,6 @@ def _to_date(seendate: str) -> str:
         return ""
 
 
-
 def articles_to_daily_features(ticker: str, articles: List[Dict[str, Any]]) -> pd.DataFrame:
     rows = []
     for a in articles:

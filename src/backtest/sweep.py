@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from itertools import product
+from pathlib import Path
+
 import pandas as pd
 
 from src.backtest.sim import simulate_equal_weight_portfolio
+
 
 @dataclass(frozen=True)
 class SweepRow:
@@ -62,14 +64,6 @@ def run_sweep(
         port = port.dropna(subset=["equity"])
         total_return = float(port["equity"].iloc[-1] - 1.0) if len(port) else 0.0
 
-
-
-
-        # total_return: last equity - 1
-        total_ret = 0.0
-        if getattr(res, "equity_curve", None) is not None and len(res.equity_curve) > 0:
-            total_ret = _safe_float(res.equity_curve[-1] - 1.0, 0.0)
-
         rows.append(
             dict(
                 sent_thresh=float(sent_thresh),
@@ -82,7 +76,6 @@ def run_sweep(
                 total_return=total_return,
             )
         )
-
 
     return pd.DataFrame(rows)
 
@@ -101,14 +94,18 @@ def write_sweep_report(df: pd.DataFrame, out_csv: Path, out_md: Path) -> None:
     lines = []
     lines.append("# Day 8 — Parameter Sweep (Sensitivity)")
     lines.append("")
-    lines.append("This report sweeps simulator parameters to show sensitivity of results to thresholds.")
+    lines.append(
+        "This report sweeps simulator parameters to show sensitivity of results to thresholds."
+    )
     lines.append("")
     lines.append(f"- rows_tested: {len(df)}")
     lines.append(f"- trades_range: {int(df['trades'].min())} → {int(df['trades'].max())}")
     lines.append("")
     lines.append("## Top configs (by trades, then total return)")
     lines.append("")
-    lines.append("| sent_thresh | vol_thresh | min_docs | slippage_bps | trades | total_return | sharpe_ann | max_drawdown |")
+    lines.append(
+        "| sent_thresh | vol_thresh | min_docs | slippage_bps | trades | total_return | sharpe_ann | max_drawdown |"
+    )
     lines.append("|---:|---:|---:|---:|---:|---:|---:|---:|")
     for _, r in best.iterrows():
         lines.append(
@@ -119,7 +116,9 @@ def write_sweep_report(df: pd.DataFrame, out_csv: Path, out_md: Path) -> None:
     lines.append("")
     lines.append("## Notes")
     lines.append("- Very low trade counts can make Sharpe unstable (one bad day dominates).")
-    lines.append("- This sweep is a sanity check and helps pick reasonable defaults for a longer lookback window.")
+    lines.append(
+        "- This sweep is a sanity check and helps pick reasonable defaults for a longer lookback window."
+    )
     lines.append("")
 
     out_md.write_text("\n".join(lines), encoding="utf-8")

@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import List
 
 import pandas as pd
 
-from src.backtest.returns import load_price_cache, compute_forward_returns
-from src.backtest.stats import spearman_ic, permutation_pvalue_ic, bootstrap_mean_ci
-
+from src.backtest.returns import compute_forward_returns, load_price_cache
+from src.backtest.stats import bootstrap_mean_ci, permutation_pvalue_ic, spearman_ic
 
 
 @dataclass(frozen=True)
@@ -76,18 +75,18 @@ def run_signal_eval(eval_df: pd.DataFrame) -> EvalResult:
     - Simple event study on "news burst" days (volume_z >= 1.0)
     """
     if eval_df.empty:
-        return EvalResult(merged_rows=0, ic_spearman_1d=0.0, events_n=0, event_mean_1d=0.0, event_mean_3d=0.0)
+        return EvalResult(
+            merged_rows=0, ic_spearman_1d=0.0, events_n=0, event_mean_1d=0.0, event_mean_3d=0.0
+        )
 
     ic = spearman_ic(eval_df["avg_compound"], eval_df["fwd_ret_1d"])
     p_ic = permutation_pvalue_ic(eval_df["avg_compound"], eval_df["fwd_ret_1d"], n_perm=1000)
-
 
     events = eval_df[(eval_df["volume_z"] >= 1.0) & (eval_df["docs"] >= 10)].copy()
     events_n = int(len(events))
 
     m1, lo1, hi1 = bootstrap_mean_ci(events["fwd_ret_1d"]) if events_n else (0.0, 0.0, 0.0)
     m3, lo3, hi3 = bootstrap_mean_ci(events["fwd_ret_3d"]) if events_n else (0.0, 0.0, 0.0)
-
 
     return EvalResult(
         merged_rows=int(len(eval_df)),
@@ -128,6 +127,7 @@ def write_day5_report(result: EvalResult, out_path: Path) -> None:
         ),
         encoding="utf-8",
     )
+
 
 def write_merged_csv(eval_df: pd.DataFrame, out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)

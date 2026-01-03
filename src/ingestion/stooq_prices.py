@@ -53,7 +53,9 @@ def load_or_download_daily_prices(
 def _clean_prices_df(df: pd.DataFrame) -> pd.DataFrame:
     if "Date" not in df.columns:
         # Stooq sometimes returns an empty/invalid response; be explicit.
-        raise ValueError("Stooq response missing 'Date' column (ticker may be invalid or unavailable).")
+        raise ValueError(
+            "Stooq response missing 'Date' column (ticker may be invalid or unavailable)."
+        )
 
     df = df.copy()
     df["Date"] = pd.to_datetime(df["Date"], errors="coerce")

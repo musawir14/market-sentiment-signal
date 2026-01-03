@@ -1,8 +1,8 @@
 from dataclasses import dataclass
+
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from src.features.text_cleaning import clean_text
-
 
 _analyzer = SentimentIntensityAnalyzer()
 

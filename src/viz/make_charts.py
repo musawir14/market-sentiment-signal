@@ -1,18 +1,20 @@
 from __future__ import annotations
 
-from pathlib import Path
 import re
+from pathlib import Path
 
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
 plt.style.use("seaborn-v0_8-whitegrid")
-plt.rcParams.update({
-    "figure.figsize": (9, 4.5),
-    "font.size": 11,
-    "axes.titlesize": 14,
-    "axes.labelsize": 12,
-})
+plt.rcParams.update(
+    {
+        "figure.figsize": (9, 4.5),
+        "font.size": 11,
+        "axes.titlesize": 14,
+        "axes.labelsize": 12,
+    }
+)
 
 REPORT_DIR = Path("report")
 FIG_DIR = REPORT_DIR / "figures"

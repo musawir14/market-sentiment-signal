@@ -6,17 +6,12 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from src.ingestion.stooq_prices import load_or_download_daily_prices
-from src.ingestion.gdelt_news import load_or_download_gdelt_articles
-from src.features.daily_features import build_and_save_daily_features
-from src.backtest.eval import build_eval_table, run_signal_eval, write_day5_report
+from src.backtest.eval import build_eval_table, run_signal_eval, write_day5_report, write_merged_csv
 from src.backtest.sim import simulate_equal_weight_portfolio
-from src.backtest.eval import write_merged_csv
 from src.backtest.sweep import run_sweep, write_sweep_report
-
-
-
-
+from src.features.daily_features import build_and_save_daily_features
+from src.ingestion.gdelt_news import load_or_download_gdelt_articles
+from src.ingestion.stooq_prices import load_or_download_daily_prices
 
 
 @dataclass
@@ -43,7 +38,6 @@ TICKER_TO_QUERY = {
 }
 
 
-
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Market sentiment project pipeline.")
     p.add_argument(
@@ -59,11 +53,16 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--lookback-days", type=int, default=7, help="Days of news to fetch.")
     p.add_argument("--max-records", type=int, default=250, help="Max articles per ticker query.")
-    p.add_argument("--sent-thresh", type=float, default=0.05, help="Sentiment threshold for long/short.")
-    p.add_argument("--vol-thresh", type=float, default=1.0, help="volume_z threshold for burst days.")
+    p.add_argument(
+        "--sent-thresh", type=float, default=0.05, help="Sentiment threshold for long/short."
+    )
+    p.add_argument(
+        "--vol-thresh", type=float, default=1.0, help="volume_z threshold for burst days."
+    )
     p.add_argument("--min-docs", type=int, default=10, help="Minimum docs for signal day.")
-    p.add_argument("--slippage-bps", type=float, default=2.0, help="Slippage per trade in basis points.")
-
+    p.add_argument(
+        "--slippage-bps", type=float, default=2.0, help="Slippage per trade in basis points."
+    )
 
     return p.parse_args()
 
@@ -87,6 +86,7 @@ def run_prices_stage(tickers: list[str]) -> RunMetrics:
     metrics.cache_hit_rate_pct = round((cache_hits / len(tickers)) * 100.0, 2) if tickers else 0.0
     return metrics
 
+
 def run_news_stage(tickers: list[str], lookback_days: int, max_records: int) -> RunMetrics:
     metrics = RunMetrics()
     metrics.tickers_targeted = len(tickers)
@@ -104,7 +104,7 @@ def run_news_stage(tickers: list[str], lookback_days: int, max_records: int) -> 
                 cache_dir=cache_dir,
                 lookback_days=lookback_days,
                 max_records=max_records,
-        )
+            )
         except Exception as e:
             print(f"- {t}: query='{query}' FAILED: {e}")
             continue  # skip this ticker and move on
@@ -112,7 +112,9 @@ def run_news_stage(tickers: list[str], lookback_days: int, max_records: int) -> 
         total_docs += result.docs
         cache_hits += 1 if result.cache_hit else 0
 
-        print(f"- {t}: query='{query}', docs={result.docs}, cache_hit={result.cache_hit}, path={result.path}")
+        print(
+            f"- {t}: query='{query}', docs={result.docs}, cache_hit={result.cache_hit}, path={result.path}"
+        )
 
     metrics.news_docs_fetched = total_docs
     metrics.cache_hit_rate_pct = round((cache_hits / len(tickers)) * 100.0, 2) if tickers else 0.0
@@ -128,7 +130,9 @@ def main() -> None:
     if args.stage == "prices":
         metrics = run_prices_stage(tickers)
     elif args.stage == "news":
-        metrics = run_news_stage(tickers, lookback_days=args.lookback_days, max_records=args.max_records)
+        metrics = run_news_stage(
+            tickers, lookback_days=args.lookback_days, max_records=args.max_records
+        )
     elif args.stage == "features":
         # Force-load from cache by calling the same ingestion function (it should hit cache)
         from src.ingestion.gdelt_news import load_or_download_gdelt_articles
@@ -154,9 +158,10 @@ def main() -> None:
         metrics = RunMetrics(tickers_targeted=len(tickers))
         metrics.news_docs_fetched = sum(len(v) for v in ticker_to_articles.values())
         metrics.cache_hit_rate_pct = 100.0  # should be, if cached; we’ll verify via output speed
-        print(f"\nWrote daily features: rows={result.rows_written}, unique_days={result.unique_days}, path={result.path}")
+        print(
+            f"\nWrote daily features: rows={result.rows_written}, unique_days={result.unique_days}, path={result.path}"
+        )
     elif args.stage == "eval":
-
         features_path = Path("data") / "features" / "daily_features.csv"
         prices_cache_dir = Path("data") / "prices"
 
@@ -176,7 +181,9 @@ def main() -> None:
         metrics.news_docs_fetched = int(len(eval_df))  # rows in merged table (proxy)
         metrics.cache_hit_rate_pct = 100.0
         print(f"\nWrote report: {report_path}")
-        print(f"IC (Spearman, 1D): {res.ic_spearman_1d:.4f}  |  perm p-value: {res.ic_perm_pvalue:.4f}")
+        print(
+            f"IC (Spearman, 1D): {res.ic_spearman_1d:.4f}  |  perm p-value: {res.ic_perm_pvalue:.4f}"
+        )
         print(
             "Event study (burst days): "
             f"n={res.events_n}, "
@@ -185,7 +192,6 @@ def main() -> None:
         )
 
     elif args.stage == "simulate":
-
         features_path = Path("data") / "features" / "daily_features.csv"
         prices_cache_dir = Path("data") / "prices"
 
@@ -265,7 +271,6 @@ def main() -> None:
         )
     else:
         metrics = RunMetrics(tickers_targeted=0)
-
 
     metrics.pipeline_runtime_sec = round(time.time() - start, 4)
 

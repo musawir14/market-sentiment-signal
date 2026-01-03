@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+
 import pandas as pd
 
 
@@ -22,7 +23,7 @@ def _annualized_sharpe(daily_rets: pd.Series) -> float:
     sd = r.std(ddof=0)
     if sd == 0 or pd.isna(sd):
         return 0.0
-    return float((mu / sd) * (252 ** 0.5))
+    return float((mu / sd) * (252**0.5))
 
 
 def _max_drawdown(equity: pd.Series) -> float:
