@@ -26,3 +26,9 @@ jobs:
 
       - name: Tests (pytest)
         run: pytest -q
+
+      - name: Run tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: pytest -q
+
