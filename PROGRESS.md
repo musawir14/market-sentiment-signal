@@ -151,3 +151,45 @@
 
 **Next**
 - Extend lookback window (e.g., 60–180 days) so the sweep reflects more realistic performance and produces smoother equity curves.
+
+## Day 9 — CI + Lint + Tests
+
+**What I did**
+- Set up automated checks to keep the repo clean and reproducible.
+- Fixed Ruff issues (sorted imports, removed unused variables/imports).
+- Made pytest run reliably on both local machine and GitHub Actions by ensuring `src/` imports work during test collection.
+
+**Checks**
+- ruff check . (passes)
+- pytest -q (passes)
+
+**Notes**
+- VADER dependency emits DeprecationWarnings (third-party), but tests pass successfully.
+
+## Day 10 — Simulation Run (Chosen Sweep Config)
+
+**Command**
+python -m src.pipeline --stage simulate --sent-thresh 0.02 --vol-thresh 0.5 --min-docs 5 --slippage-bps 0
+
+**Strategy params**
+- sent_thresh: 0.02
+- vol_thresh: 0.5
+- min_docs: 5
+- slippage_bps: 0
+
+**Results**
+- trades: 6
+- sharpe (annualized): -4.1952
+- max_drawdown: 0.0000
+
+**RunMetrics**
+- tickers_targeted: 4
+- pipeline_runtime_sec: 0.0907
+- cache_hit_rate_pct: 100.0
+- news_docs_fetched: 0
+- price_rows_fetched: 0
+
+**Outputs**
+- report/day6_backtest.md
+- report/day6_merged_table.csv
+- report/portfolio_daily.csv
