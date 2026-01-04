@@ -66,9 +66,12 @@ python -m src.pipeline
 ```
 ---
 
-## Results (coming soon)
+## Results 
+Equity curve from the current simulator settings:
 
-Planned outputs:
-- event study plots (post-event returns over 1/3/5 days)
-- summary table (hit rate, correlation with future returns, t-stats)
-- dashboard screenshots / demo GIF
+![Equity Curve](report/figures/equity_curve.png)
+
+Relationship between daily sentiment and next-day return:
+
+![Sentiment vs Return](report/figures/sentiment_vs_return.png)
+

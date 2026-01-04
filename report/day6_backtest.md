@@ -7,15 +7,15 @@ Strategy:
 - Equal-weight portfolio across tickers with positions that day.
 
 Parameters:
-- sent_thresh: 0.05
-- vol_thresh: 1.0
-- min_docs: 10
-- slippage_bps: 2.0
+- sent_thresh: 0.02
+- vol_thresh: 0.5
+- min_docs: 5
+- slippage_bps: 0.0
 
 Results:
-- signal_days (raw): 6
-- trades (executed): 3
-- sharpe_annual: -14.7371
+- signal_days (raw): 13
+- trades (executed): 6
+- sharpe_annual: -4.1952
 - max_drawdown: 0.0000
 
 Files:

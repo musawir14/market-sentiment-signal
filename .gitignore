@@ -3,7 +3,7 @@
 __pycache__/
 *.pyc
 
-# Data + outputs
+# keep raw data out of git
 data/
 *.parquet
 
