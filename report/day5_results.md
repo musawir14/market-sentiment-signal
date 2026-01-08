@@ -5,11 +5,11 @@ What this measures:
 - **Event study:** average forward returns on **news-burst** days (volume_z ≥ 1.0, docs ≥ 10).
 
 ## Summary
-- merged_rows: 32
-- ic_spearman_1d: 0.1958
-- events_n: 9
-- event_mean_1d: 0.004464
-- event_mean_3d: -0.001841
-- ic_perm_pvalue: 0.5460
-- event_mean_1d: 0.004464  (95% CI [-0.001589, 0.010647])
-- event_mean_3d: -0.001841  (95% CI [-0.001841, -0.001841])
+- merged_rows: 117
+- ic_spearman_1d: 0.1099
+- events_n: 37
+- event_mean_1d: 0.006483
+- event_mean_3d: 0.008121
+- ic_perm_pvalue: 0.4970
+- event_mean_1d: 0.006483  (95% CI [0.000703, 0.012039])
+- event_mean_3d: 0.008121  (95% CI [-0.001670, 0.017807])

@@ -27,6 +27,17 @@ DEFAULT_TICKERS = [
     "aapl.us",
     "msft.us",
     "nvda.us",
+    "amzn.us",
+    "tsla.us",
+    "meta.us",
+    "googl.us",
+    "jpm.us",
+    "xom.us",
+    "unh.us",
+    "cost.us",
+    "avgo.us",
+    "v.us",
+    "ma.us",
     "spy.us",
 ]
 
@@ -34,6 +45,17 @@ TICKER_TO_QUERY = {
     "aapl.us": "Apple",
     "msft.us": "Microsoft",
     "nvda.us": "NVIDIA",
+    "amzn.us": "Amazon",
+    "tsla.us": "Tesla",
+    "meta.us": "Meta Platforms",
+    "googl.us": "Alphabet",
+    "jpm.us": "JPMorgan",
+    "xom.us": "Exxon Mobil",
+    "unh.us": "UnitedHealth",
+    "cost.us": "Costco",
+    "avgo.us": "Broadcom",
+    "v.us": "Visa",
+    "ma.us": "Mastercard",
     "spy.us": "SPY",
 }
 
@@ -75,12 +97,23 @@ def run_prices_stage(tickers: list[str]) -> RunMetrics:
     total_rows = 0
     cache_hits = 0
 
+    successes = 0
+
     for t in tickers:
-        df, result = load_or_download_daily_prices(ticker=t, cache_dir=cache_dir)
+        try:
+            _df, result = load_or_download_daily_prices(ticker=t, cache_dir=cache_dir)
+        except Exception as e:
+            print(f"- {t}: FAILED: {e}")
+            continue
+
+        successes += 1
         total_rows += result.rows
         cache_hits += 1 if result.cache_hit else 0
-        # Helpful print for debugging / proof on GitHub
         print(f"- {t}: rows={result.rows}, cache_hit={result.cache_hit}, path={result.path}")
+
+    metrics.price_rows_fetched = total_rows
+    metrics.cache_hit_rate_pct = round((cache_hits / successes) * 100.0, 2) if successes else 0.0
+
 
     metrics.price_rows_fetched = total_rows
     metrics.cache_hit_rate_pct = round((cache_hits / len(tickers)) * 100.0, 2) if tickers else 0.0
