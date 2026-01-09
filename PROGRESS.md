@@ -193,3 +193,11 @@ python -m src.pipeline --stage simulate --sent-thresh 0.02 --vol-thresh 0.5 --mi
 - report/day6_backtest.md
 - report/day6_merged_table.csv
 - report/portfolio_daily.csv
+
+## Day 11 — Expanded Universe to 15 Tickers + Refreshed Pipeline Outputs
+
+- Updated pipeline defaults to 15 tickers and refreshed cached runs.
+- News ingest (7-day, max 250 per query): 3,527 articles fetched across 15 tickers (93.33% cache hit rate).
+- Feature engineering: wrote 117 ticker-day rows across 16 unique dates to `data/features/daily_features.csv`.
+- Evaluation: IC (Spearman, 1D) = 0.1099 (perm p-value = 0.4970); event study burst days n = 37, mean_1d = 0.006483, mean_3d = 0.008121.
+
