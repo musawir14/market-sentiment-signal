@@ -45,7 +45,7 @@ def run_sweep(
     ):
         res = simulate_equal_weight_portfolio(
             merged_df=df,
-            out_dir=Path("report"),  # it will overwrite portfolio_daily.csv each run (fine for now)
+            out_dir=Path("report") / "sweep_tmp",  # it will overwrite portfolio_daily.csv each run (fine for now)
             sent_thresh=float(sent_thresh),
             vol_thresh=float(vol_thresh),
             min_docs=int(min_docs),

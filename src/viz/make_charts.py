@@ -27,12 +27,23 @@ def plot_equity_curve():
         return
 
     df = pd.read_csv(path)
-    df = df.dropna(subset=["equity"])
-    if df.empty:
-        print("No equity data to plot (equity column is empty).")
-        return
 
-    df["date"] = pd.to_datetime(df["date"])
+    # If equity column is missing (can happen if another stage overwrote the file),
+    # reconstruct it from daily portfolio returns.
+    if "equity" not in df.columns:
+        if "portfolio_ret" not in df.columns:
+            print(f"Cannot plot equity: missing both 'equity' and 'portfolio_ret' in {path}")
+            print(f"Found columns: {list(df.columns)}")
+            return
+        df["portfolio_ret"] = pd.to_numeric(df["portfolio_ret"], errors="coerce").fillna(0.0)
+        df["equity"] = (1.0 + df["portfolio_ret"]).cumprod()
+
+    # Clean + sort
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df = df.dropna(subset=["date", "equity"]).sort_values("date")
+    if df.empty:
+        print("No equity data to plot.")
+        return
 
     plt.figure()
     plt.plot(df["date"], df["equity"])
@@ -47,6 +58,7 @@ def plot_equity_curve():
     plt.savefig(out, dpi=200)
     plt.close()
     print(f"Wrote {out}")
+
 
 
 def plot_scatter_sentiment_vs_return():

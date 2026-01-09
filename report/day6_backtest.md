@@ -13,10 +13,10 @@ Parameters:
 - slippage_bps: 0.0
 
 Results:
-- signal_days (raw): 13
-- trades (executed): 6
-- sharpe_annual: -4.1952
-- max_drawdown: 0.0000
+- signal_days (raw): 47
+- trades (executed): 16
+- sharpe_annual: 4.8131
+- max_drawdown: -0.0056
 
 Files:
 - merged_table: report/day6_merged_table.csv
