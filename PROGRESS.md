@@ -201,3 +201,9 @@ python -m src.pipeline --stage simulate --sent-thresh 0.02 --vol-thresh 0.5 --mi
 - Feature engineering: wrote 117 ticker-day rows across 16 unique dates to `data/features/daily_features.csv`.
 - Evaluation: IC (Spearman, 1D) = 0.1099 (perm p-value = 0.4970); event study burst days n = 37, mean_1d = 0.006483, mean_3d = 0.008121.
 
+## Day 12 (2026-01-10)
+- Ran end-to-end `demo` pipeline over 15 tickers (lookback_days=14, max_records=200, sent_thresh=0.02, vol_thresh=0.5, min_docs=5, slippage_bps=0).
+- Generated features: `data/features/daily_features.csv` (rows=223, unique_days=15).
+- Wrote reports: `report/day5_results.md`, `report/day6_backtest.md`, and `report/latest_results.md`.
+- Produced charts: `report/figures/equity_curve.png`, `report/figures/sentiment_vs_return.png`, `report/figures/event_study.png`.
+
