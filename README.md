@@ -66,12 +66,17 @@ python -m src.pipeline
 ```
 ---
 
-## Results 
-Equity curve from the current simulator settings:
+## Results (latest run)
 
-![Equity Curve](report/figures/equity_curve.png)
+See: `report/latest_results.md`
+- tickers: 15
+- IC (Spearman, 1D): 0.1003 (perm p=0.4180)
+- event study burst days: n=57
+- best sweep config: sent=0.02, vol=0.5, min_docs=5, slip_bps=0 (trades=28, total_return=0.0042)
 
-Relationship between daily sentiment and next-day return:
+### Charts
 
-![Sentiment vs Return](report/figures/sentiment_vs_return.png)
+![Equity curve](report/figures/equity_curve.png)
+![Sentiment vs return](report/figures/sentiment_vs_return.png)
+![Event study](report/figures/event_study.png)
 

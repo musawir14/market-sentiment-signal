@@ -1,0 +1,9 @@
+{
+    "lookback_days": 14,
+    "max_records": 200,
+    "sent_thresh": 0.02,
+    "vol_thresh": 0.5,
+    "min_docs": 5,
+    "slippage_bps": 0
+  }
+  

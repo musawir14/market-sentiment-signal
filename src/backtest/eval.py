@@ -102,31 +102,66 @@ def run_signal_eval(eval_df: pd.DataFrame) -> EvalResult:
     )
 
 
-def write_day5_report(result: EvalResult, out_path: Path) -> None:
+def write_day5_report(result, eval_df: pd.DataFrame, out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(
-        "\n".join(
-            [
-                "# Day 5 Results — Signal Evaluation",
-                "",
-                "What this measures:",
-                "- **IC (Spearman, 1D):** rank correlation between daily sentiment and next-day return.",
-                "- **Event study:** average forward returns on **news-burst** days (volume_z ≥ 1.0, docs ≥ 10).",
-                "",
-                "## Summary",
-                f"- merged_rows: {result.merged_rows}",
-                f"- ic_spearman_1d: {result.ic_spearman_1d:.4f}",
-                f"- events_n: {result.events_n}",
-                f"- event_mean_1d: {result.event_mean_1d:.6f}",
-                f"- event_mean_3d: {result.event_mean_3d:.6f}",
-                f"- ic_perm_pvalue: {result.ic_perm_pvalue:.4f}",
-                f"- event_mean_1d: {result.event_mean_1d:.6f}  (95% CI [{result.event_mean_1d_ci_lo:.6f}, {result.event_mean_1d_ci_hi:.6f}])",
-                f"- event_mean_3d: {result.event_mean_3d:.6f}  (95% CI [{result.event_mean_3d_ci_lo:.6f}, {result.event_mean_3d_ci_hi:.6f}])",
-                "",
-            ]
+
+    # ---- Dataset summary (from eval_df) ----
+    tickers = sorted(eval_df["ticker"].dropna().unique().tolist()) if "ticker" in eval_df.columns else []
+    n_tickers = len(tickers)
+
+    if "date" in eval_df.columns:
+        d = pd.to_datetime(eval_df["date"], errors="coerce").dropna()
+        min_date = d.min().date().isoformat() if len(d) else ""
+        max_date = d.max().date().isoformat() if len(d) else ""
+    else:
+        min_date, max_date = "", ""
+
+    # ---- Interpretation (short + readable) ----
+    ic = result.ic_spearman_1d
+    p = result.ic_perm_pvalue
+
+    if p < 0.05:
+        ic_read = "statistically significant"
+    else:
+        ic_read = "not statistically significant"
+
+    interpretation_lines = [
+        "## Interpretation",
+        (
+            f"The sentiment feature shows a {ic:.4f} Spearman IC with next-day returns "
+            f"and is {ic_read} (perm p-value = {p:.4f})."
         ),
-        encoding="utf-8",
-    )
+        (
+            f"On burst days (high volume_z), the event study suggests average forward returns of "
+            f"{result.event_mean_1d:.6f} (1D) and {result.event_mean_3d:.6f} (3D). "
+            "Use this as a directional signal quality check, not a guarantee of predictability."
+        ),
+        "",
+    ]
+
+    lines = [
+        "# Day 5 Results — Signal Evaluation",
+        "",
+        "What this measures:",
+        "- **IC (Spearman, 1D):** rank correlation between daily sentiment and next-day return.",
+        "- **Event study:** average forward returns on **news-burst** days (volume_z ≥ 1.0, docs ≥ 10).",
+        "",
+        "## Dataset",
+        f"- merged_rows: {result.merged_rows}",
+        f"- tickers: {n_tickers}" + (f" ({', '.join(tickers)})" if n_tickers <= 20 else ""),
+        f"- date_span: {min_date} → {max_date}" if min_date and max_date else "- date_span: (unknown)",
+        "",
+        "## Summary",
+        f"- ic_spearman_1d: {result.ic_spearman_1d:.4f}",
+        f"- ic_perm_pvalue: {result.ic_perm_pvalue:.4f}",
+        f"- events_n: {result.events_n}",
+        f"- event_mean_1d: {result.event_mean_1d:.6f} (95% CI [{result.event_mean_1d_ci_lo:.6f}, {result.event_mean_1d_ci_hi:.6f}])",
+        f"- event_mean_3d: {result.event_mean_3d:.6f} (95% CI [{result.event_mean_3d_ci_lo:.6f}, {result.event_mean_3d_ci_hi:.6f}])",
+        "",
+        *interpretation_lines,
+    ]
+
+    out_path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def write_merged_csv(eval_df: pd.DataFrame, out_path: Path) -> None:
